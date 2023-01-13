@@ -1,0 +1,26 @@
+version: '3.7'
+
+services:
+  redis:
+    image: redis:6-alpine
+    restart: always
+
+  worker:
+    build: .
+    restart: always
+    command: "celery --app=main.app worker --loglevel=WARNING"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+
+  beat:
+    build: .
+    restart: always
+    command: "celery --app=main.app beat --loglevel=WARNING"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
